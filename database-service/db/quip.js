@@ -1,7 +1,7 @@
 const quip = require('../quip')
 const db = require('./db')
 
-const client = new quip.Client({accessToken: process.env.QUIP_API_TOKEN });
+const client = new quip.Client({accessToken: Buffer.from(process.env.QUIP_API_TOKEN, 'base64').toString('ascii') });
 // client.getAuthenticatedUser((err, user) => {
     // client.getFolder(user["starred_folder_id"], (err, folder) => {
     //     console.log("You have", folder["children"].length,

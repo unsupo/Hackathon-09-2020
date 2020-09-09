@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 
 axios.get('https://slack.com/api/conversations.list', {
     headers: {
-        Authorization: 'Bearer ' + process.env.SLACK_TOKEN //the token is a variable which holds the token
+        Authorization: 'Bearer ' + Buffer.from(process.env.SLACK_TOKEN, 'base64').toString('ascii') //the token is a variable which holds the token
     }
 })
     .then(value => console.log(JSON.stringify(value.data)))
