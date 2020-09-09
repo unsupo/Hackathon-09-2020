@@ -2,7 +2,7 @@ const fs = require('fs')
 const Sequelize = require("sequelize");
 // sqlite db if database-service is down
 const force = false // set back to false to not lose data on restart
-const db_dir = "./db"
+const db_dir = "./sqlite_db"
 const db = 'search.db'
 const get_sqlite_dir = () => {
     if (!fs.existsSync(db_dir))
