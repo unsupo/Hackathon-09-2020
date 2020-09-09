@@ -12,11 +12,10 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 const decode = Buffer.from(process.env.SLACK_TOKEN, 'base64').toString('ascii').trim()
-console.log(decode)
 axios.get('https://slack.com/api/conversations.list', {
     headers: {
         Authorization: `Bearer ${decode}`  //the token is a variable which holds the token
-    }//"xoxb-1338166611318-1344916244226-mYMHRG3KvZXMn9o8gkcaq3v3" //
+    }
 })
     .then(value => console.log(JSON.stringify(value.data)))
     .catch(reason => console.log(JSON.stringify(reason)))
