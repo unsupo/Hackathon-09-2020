@@ -10,6 +10,7 @@
   "author": "jarndt",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^8.2.0",
     "axios": "^0.20.0",
     "bluebird": "^3.7.2",
     "body-parser": "^1.19.0",

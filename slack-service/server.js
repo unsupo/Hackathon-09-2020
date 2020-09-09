@@ -1,5 +1,6 @@
 'use strict';
 require('dotenv').config()
+const axios = require("axios")
 const express = require('express');
 const app = express();
 
@@ -11,15 +12,13 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-// curl -X GET -H 'Authorization: Bearer xoxb-1338166611318-1344916244226-Zs3rMm9sfX2npXwvSEqsPKI7'
-const token = "xoxb-1338166611318-1344916244226-Zs3rMm9sfX2npXwvSEqsPKI7"
 axios.get('https://slack.com/api/conversations.list', {
     headers: {
-        Authorization: 'Bearer ' + token //the token is a variable which holds the token
+        Authorization: 'Bearer ' + process.env.SLACK_TOKEN //the token is a variable which holds the token
     }
 })
-    .then(value => res.end(JSON.stringify(value.data)))
-    .catch(reason => res.end(JSON.stringify(reason)))
+    .then(value => console.log(JSON.stringify(value.data)))
+    .catch(reason => console.log(JSON.stringify(reason)))
 
 app.post('/aPost',(req, res) => {})
 
