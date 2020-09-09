@@ -21,7 +21,7 @@ const caller = (method, res) => {
 
 app.post('/newDocument',(req, res) =>
     // caller(quip.newDocument(req.body.title, req.body.content),res)
-    caller(quip.newDocument(req.body.title),res)
+    caller(quip.newDocument(req.body.title, req.body.content),res)
 )
 
 app.post('/store',(req, res) => {
