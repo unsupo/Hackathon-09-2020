@@ -1,0 +1,14 @@
+version: '2.0'
+services:
+  search:
+    build: search-service/.
+    ports:
+      - "8081:8081"
+    links:
+      - database
+  database:
+    build: database-service/.
+    ports:
+      - "3030:3030"
+  slack:
+    build: slack-service/.
