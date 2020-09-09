@@ -11,20 +11,21 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-app.post('/newDocument',(req, res) =>
-    // caller(quip.newDocument(req.body.title, req.body.content),res)
-    caller(quip.newDocument(req.body.title),res)
-)
-
-app.get("/question", (req, res) => {
-    // if(req.query.hasOwnProperty('id'))
-
-    axios.get('http://localhost:3030/'+'questions', {params: req.query})
-        .then(value => res.end(JSON.stringify(value.data)))
-        .catch(reason => res.end(JSON.stringify(reason)))
+// curl -X GET -H 'Authorization: Bearer xoxb-1338166611318-1344916244226-Zs3rMm9sfX2npXwvSEqsPKI7'
+const token = "xoxb-1338166611318-1344916244226-Zs3rMm9sfX2npXwvSEqsPKI7"
+axios.get('https://slack.com/api/conversations.list', {
+    headers: {
+        Authorization: 'Bearer ' + token //the token is a variable which holds the token
+    }
 })
+    .then(value => res.end(JSON.stringify(value.data)))
+    .catch(reason => res.end(JSON.stringify(reason)))
 
-const server = app.listen(3030, function () {
+app.post('/aPost',(req, res) => {})
+
+app.get("/aGet", (req, res) => {})
+
+const server = app.listen(2020, function () {
     const host = server.address().address;
     const port = server.address().port;
     console.log("Example app listening at http://%s:%s", host, port)
