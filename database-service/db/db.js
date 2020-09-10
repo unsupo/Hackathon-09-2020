@@ -91,14 +91,14 @@ module.exports.addQuestionAndAnswers = (question) => {
     return Promise.all(qs)
 }
 const createQuestionAndAnswer = (question) => new Promise((resolve, reject) => {
-    if (question.hasOwnProperty('question'))
+    if (question.hasOwnProperty('question')) {
         Question.create({
             question: question.question,
             link: question.link
         }).then(q => {
             if (question.hasOwnProperty('answers')) {
                 let answers = question.answers;
-                if (!question.answers instanceof Array)
+                if (!(question.answers instanceof Array))
                     answers = [question.answers]
                 answers.forEach(answer => {
                     _addAnswer(answer, q.id)
@@ -106,7 +106,7 @@ const createQuestionAndAnswer = (question) => new Promise((resolve, reject) => {
             }
             resolve(q)
         }).catch(reason => reject(reason))
-    else if (question.hasOwnProperty('answer')) {
+    }else if (question.hasOwnProperty('answer')) {
         if (question.hasOwnProperty('questionId'))
             resolve(_addAnswer(question, question.questionId))
     } else

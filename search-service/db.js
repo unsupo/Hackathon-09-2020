@@ -66,7 +66,7 @@ module.exports.addQuestionAndAnswers = (question) =>{
             }).then(q => {
                 if (question.hasOwnProperty('answers')) {
                     let answers = question.answers;
-                    if (!question.answers instanceof Array)
+                    if (!(question.answers instanceof Array))
                         answers = [question.answers]
                     answers.forEach(answer => {
                         _addAnswer(answer, q.id)
