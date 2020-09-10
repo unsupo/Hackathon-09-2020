@@ -18,22 +18,22 @@ const subCaller = (method, res) =>
         .then(value => res.end(JSON.stringify(value)))
         .catch(reason => res.end(JSON.stringify(reason)))
 
-const axioSubCaller = (path, data,res) =>
-    axios.post('http://localhost:3030/'+path,data)
+const axioSubCaller = (path, data, res) =>
+    axios.post('http://localhost:3030/' + path, data)
         .then(value => res.end(JSON.stringify(value.data)))
         .catch(reason => res.end(JSON.stringify(reason)))
 
 const caller = (method, res) => {
-    check_connection.checkConnection('localhost','3030')
-        .then(()=>{
+    check_connection.checkConnection('localhost', '3030')
+        .then(() => {
             // forward request to db service
             // and upload all sqlite stored objects to db service
             console.log('server up')
             res.end()
-        }, err =>{
+        }, err => {
             // save to local sqlite
             // console.log('server down')
-            subCaller(method,res)
+            subCaller(method, res)
         })
 }
 
@@ -42,10 +42,10 @@ const caller = (method, res) => {
  * /search?q=something
  */
 app.get('/search', (req, res) => {
-    check_connection.checkConnection('localhost','3030')
-        .then(()=>{
-            axios.get('http://localhost:3030/'+'questions', {params: req.query})
-                .then(value => res.end(JSON.stringify(value.data)))
+    check_connection.checkConnection('localhost', '3030')
+        .then(() => {
+            axios.get('http://localhost:3030/' + 'question', {params: req.query})
+                .then(value => res.end(JSON.stringify(search.search(value.data, ["question"], req.query.q))))
                 .catch(reason => res.end(JSON.stringify(reason)))
         }, err => {
             // save to local sqlite
@@ -66,20 +66,20 @@ app.get('/search', (req, res) => {
  * if db service is down then it'll save it as a local
  * sqlite db and bulk insert it into the db service when it comes up
  */
-app.post('/store',(req, res) => {
+app.post('/store', (req, res) => {
     const data = req.body
-    if(!data)
+    if (!data)
         res.end("Invalid body"); //invalid body
     // caller(db.addQuestionAndAnswers(data),res)
-    check_connection.checkConnection('localhost','3030')
-        .then(()=>{
+    check_connection.checkConnection('localhost', '3030')
+        .then(() => {
             // forward request to db service
             // and upload all sqlite stored objects to db service
-            axioSubCaller('store',data,res)
-        }, err =>{
+            axioSubCaller('store', data, res)
+        }, err => {
             // save to local sqlite
             // console.log('server down')
-            subCaller(db.addQuestionAndAnswers(data),res)
+            subCaller(db.addQuestionAndAnswers(data), res)
         })
 })
 
@@ -93,19 +93,19 @@ app.get("/question", (req, res) => {
     //         reject("No id or link in query params")
     // }),res)
     check_connection.checkConnection('localhost', '3030')
-        .then(()=>{
+        .then(() => {
             // forward request to db service
             // and upload all sqlite stored objects to db service
-            axios.get('http://localhost:3030/'+'question', {params: req.query})
+            axios.get('http://localhost:3030/' + 'question', {params: req.query})
                 .then(value => res.end(JSON.stringify(value.data)))
                 .catch(reason => res.end(JSON.stringify(reason)))
-        }, err =>{
+        }, err => {
             // save to local sqlite
             // console.log('server down')
-            if(req.query.hasOwnProperty('id'))
-                subCaller(db.getAllQuestionsBy('id',req.query.id),res)
-            else if(req.query.hasOwnProperty('link'))
-                subCaller(db.getQuestionByLink(req.query.link),res)
+            if (req.query.hasOwnProperty('id'))
+                subCaller(db.getAllQuestionsBy('id', req.query.id), res)
+            else if (req.query.hasOwnProperty('link'))
+                subCaller(db.getQuestionByLink(req.query.link), res)
             else
                 res.end("No link or id in query params")
         })
@@ -117,17 +117,17 @@ app.get("/answer", (req, res) => {
     //
     // }),res)
     check_connection.checkConnection('localhost', '3030')
-        .then(()=>{
+        .then(() => {
             // forward request to db service
             // and upload all sqlite stored objects to db service
-            axios.get('http://localhost:3030/'+'answer', {params: req.query})
+            axios.get('http://localhost:3030/' + 'answer', {params: req.query})
                 .then(value => res.end(JSON.stringify(value.data)))
                 .catch(reason => res.end(JSON.stringify(reason)))
-        }, err =>{
+        }, err => {
             // save to local sqlite
             // console.log('server down')
-            if(req.query.hasOwnProperty('questionId'))
-                subCaller(db.getAnswerByQuestionId(req.query.link),res)
+            if (req.query.hasOwnProperty('questionId'))
+                subCaller(db.getAnswerByQuestionId(req.query.link), res)
             else
                 res.end("No questionId in query params")
         })

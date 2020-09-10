@@ -16,34 +16,102 @@ app.use(bodyParser.json());
 const caller = (method, res) => {
     method
         .then(value => res.end(JSON.stringify(value)))
-        .catch(reason => res.end(JSON.stringify(reason)))
+        .catch(reason => {
+            try{
+                res.end(JSON.stringify(reason))
+            }catch (err){
+                res.end(JSON.stringify(reason.info))
+            }
+        })
 }
+// test for quip
+app.post('/document',(req, res) => {
+    caller(quip.document(req.body.title,req.body.content),res)
+})
 
-app.post('/newDocument',(req, res) =>
-    // caller(quip.newDocument(req.body.title, req.body.content),res)
-    caller(quip.newDocument(req.body.title, req.body.content),res)
-)
-
-app.post('/store',(req, res) => {
+// test for quip
+app.get("/thread",(req, res) => {
+    caller(quip.getThread(req.query.id),res)
+})
+/**
+ * Add a question to the database
+ * POST /question
+ [{
+        "question": "q1",
+        "link": "lq1",
+        "answers": [
+            {
+                "answer": "a11",
+                "link": "la11",
+                "emoji_count": 10
+            },
+            {
+                "answer": "a12",
+                "link": "la12"
+            }
+        ]
+    },{
+        "question": "q2",
+        "link": "lq2",
+        "answers": [
+            {
+                "answer": "a21",
+                "link": "la21",
+                "emoji_count": 10
+            },
+            {
+                "answer": "a22",
+                "link": "la22"
+            }
+        ]
+    }
+ ]
+ */
+app.post('/question',(req, res) => {
     const data = req.body
     if (!data || Object.keys(data).length === 0)
         res.end("Invalid body"); //invalid body
     caller(db.addQuestionAndAnswers(data),res)
 });
+/**
+ * Get a question by id or link
+ * GET /question?{id=:id,link=:link}
+ */
 app.get("/question", (req, res) => {
     if(req.query.hasOwnProperty('id'))
         caller(db.getAllQuestionsBy('id',req.query.id),res)
     else if(req.query.hasOwnProperty('link'))
         caller(db.getQuestionByLink(req.query.link),res)
     else
-        res.end("No link or id in query params")
+        caller(db.getAllQuestions(),res)
 })
-
-app.get("/answer", (req, res) => {
-    if(req.query.hasOwnProperty('questionId'))
-        caller(db.getAnswerByQuestionId(req.query.link),res)
-    else
-        res.end("No questionId in query params")
+/**
+ * Get all answers based off a questionId (use /question endpoint to get the questionId)
+ * GET /answer/:questionId
+ */
+app.get("/answer/:questionId", (req, res) => {
+   caller(db.getAnswerByQuestionId(req.params.questionId),res)
+})
+/**
+ * Add a question to the database
+ * POST /answer/:questionId
+ * [
+ *      {
+            "answer": "a21",
+            "link": "la21",
+            "emoji_count": 10
+        },
+        {
+            "answer": "a22",
+            "link": "la22"
+        }
+ * ]
+ */
+app.post("/answer/:questionId",(req, res) => {
+    const data = req.body
+    if (!data || Object.keys(data).length === 0)
+        res.end("Invalid body"); //invalid body
+    caller(db.addAnswers(data, req.params.questionId),res)
 })
 
 const server = app.listen(3030, function () {

@@ -1,6 +1,7 @@
 
 const fs = require('fs')
 const Sequelize = require("sequelize");
+const { Op } = require("sequelize");
 // sqlite db if database-service is down
 const force = false // set back to false to not lose data on restart
 const db_dir = "./sqlite_db"
@@ -54,6 +55,8 @@ module.exports.addQuipDoc = (title, id, link, html) =>
         doc_link: link,
         html: html
     })
+
+module.exports.getQuipDocById = (id) => QUIP_DATA.findOne({where:{[Op.or]:[{doc_link: id},{doc_id: id}]}})
 module.exports.getAllQuipDocsByTitle = (title) => QUIP_DATA.findAll({where: {doc_name: title}})
 module.exports.QUIP_DATA = QUIP_DATA
 /**
@@ -69,7 +72,7 @@ module.exports.QUIP_DATA = QUIP_DATA
             }
         ]
     }
- *  However an answer to a question is allowed
+ *  An answer to a question is allowed
  *  only if you include the questionId
  *  {
  *      "questionId": "32",
@@ -79,49 +82,76 @@ module.exports.QUIP_DATA = QUIP_DATA
  *  }
  * @param question
  */
-module.exports.addQuestionAndAnswers = (question) =>{
-    return new Promise((resolve, reject) => {
-        if (question.hasOwnProperty('question'))
-            Question.create({
-                question: question.question,
-                link: question.link
-            }).then(q => {
-                if (question.hasOwnProperty('answers')) {
-                    let answers = question.answers;
-                    if (!question.answers instanceof Array)
-                        answers = [question.answers]
-                    answers.forEach(answer => {
-                        _addAnswer(answer, q.id)
-                    })
-                }
-                resolve(q)
-            }).catch(reason => reject(reason))
-        else if (question.hasOwnProperty('answer')) {
-            if (question.hasOwnProperty('questionId'))
-                resolve(_addAnswer(question, question.questionId))
-        }else
-            reject(undefined)
-    })
+module.exports.addQuestionAndAnswers = (question) => {
+    let questions = question;
+    if (!questions instanceof Array)
+        questions = [questions]
+    const qs = []
+    questions.forEach(q=>qs.push(createQuestionAndAnswer(q)))
+    return Promise.all(qs)
 }
+const createQuestionAndAnswer = (question) => new Promise((resolve, reject) => {
+    if (question.hasOwnProperty('question'))
+        Question.create({
+            question: question.question,
+            link: question.link
+        }).then(q => {
+            if (question.hasOwnProperty('answers')) {
+                let answers = question.answers;
+                if (!question.answers instanceof Array)
+                    answers = [question.answers]
+                answers.forEach(answer => {
+                    _addAnswer(answer, q.id)
+                })
+            }
+            resolve(q)
+        }).catch(reason => reject(reason))
+    else if (question.hasOwnProperty('answer')) {
+        if (question.hasOwnProperty('questionId'))
+            resolve(_addAnswer(question, question.questionId))
+    } else
+        reject(undefined)
+})
 module.exports.getAnswerByQuestionId = (questionId) => Answer.findAll({where: {questionId: questionId}})
-module.exports.getAllQuestions = () => Question.findAll()
+module.exports.getAllQuestions = () => Question.findAll({
+    include:[
+        {
+            model: Answer
+        }
+    ]
+})
 
 module.exports.getAllQuestionsBy = (key, value) =>{
     const where={}
     where[key]=value
-    return Question.findAll({where: where})
+    return Question.findAll({where: where, include:[
+            {
+                model: Answer
+            }
+        ]})
 }
 
 module.exports.getQuestionByLink = (link) =>{
-    return Question.findAll({where:{link: link}})
+    return Question.findAll({where:{link: link}, include:[
+            {
+                model: Answer
+            }
+        ]})
 }
 
-const _addAnswer = (answer, questionId) =>{
+const _addAnswer = (answer, questionId) =>
     Answer.create({
         answer: answer.answer,
         link: answer.link,
+        emoji_count: answer.emoji_count | 0,
         questionId: questionId
-    }).then(a => { return a; })
+    })
+module.exports.addAnswers = (answer, questionId) => {
+    let answers = answer;
+    if (!answers instanceof Array)
+        answers = [answers]
+    const qs = []
+    answers.forEach(q=>qs.push(_addAnswer(q, questionId)))
+    return Promise.all(qs)
 }
-module.exports.addAnswer = _addAnswer;
 
